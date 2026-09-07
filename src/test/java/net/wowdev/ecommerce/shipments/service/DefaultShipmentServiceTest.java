@@ -72,7 +72,7 @@ class DefaultShipmentServiceTest {
     when(repository.save(any())).thenReturn(entity(id));
     assertEquals(id, service.create(dto(id)).getId());
     verify(shipmentProducer)
-        .publishAfterCommit(any(net.wowdev.ecommerce.domain.events.ShippingCompletedEvent.class));
+        .publishAfterCommit(any(net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent.class));
   }
 
   @Test
@@ -83,7 +83,7 @@ class DefaultShipmentServiceTest {
     ShippingDTO result = service.update(id, dto(id));
     assertEquals(id, result.getId());
     verify(shipmentProducer)
-        .publishAfterCommit(any(net.wowdev.ecommerce.domain.events.ShippingCompletedEvent.class));
+        .publishAfterCommit(any(net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent.class));
   }
 
   @Test

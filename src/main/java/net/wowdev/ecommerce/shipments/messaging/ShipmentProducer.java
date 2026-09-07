@@ -2,7 +2,7 @@ package net.wowdev.ecommerce.shipments.messaging;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.wowdev.ecommerce.domain.events.ShippingCompletedEvent;
+import net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ public class ShipmentProducer {
   @Value("${app.kafka.shipments-topic}")
   private String topic;
 
-  public void publishAfterCommit(final ShippingCompletedEvent event) {
+  public void publishAfterCommit(final ShipmentCompletedEvent event) {
     if (TransactionSynchronizationManager.isSynchronizationActive()) {
       TransactionSynchronizationManager.registerSynchronization(
           new TransactionSynchronization() {
@@ -32,9 +32,9 @@ public class ShipmentProducer {
     send(event);
   }
 
-  private void send(final ShippingCompletedEvent event) {
+  private void send(final ShipmentCompletedEvent event) {
     final String key = event.shippingDTO().getId().toString();
-    log.debug(">> Publishing ShippingCompletedEvent {} with key {}", event.eventId(), key);
+    log.debug(">> Publishing ShipmentCompletedEvent {} with key {}", event.eventId(), key);
     kafkaTemplate.send(topic, key, event);
   }
 }

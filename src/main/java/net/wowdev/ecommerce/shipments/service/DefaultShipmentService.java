@@ -5,7 +5,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import net.wowdev.ecommerce.domain.dto.ShippingDTO;
 import net.wowdev.ecommerce.domain.entity.ShippingEntity;
-import net.wowdev.ecommerce.domain.events.ShippingCompletedEvent;
+import net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent;
 import net.wowdev.ecommerce.domain.mapper.ShippingMapper;
 import net.wowdev.ecommerce.shipments.messaging.ShipmentProducer;
 import net.wowdev.ecommerce.shipments.repository.ShipmentRepository;
@@ -42,7 +42,7 @@ public class DefaultShipmentService implements ShipmentService {
     final ShippingEntity entity = ShippingMapper.toEntity(shipment);
     final ShippingDTO saved = ShippingMapper.toDto(repository.save(entity));
     shipmentProducer.publishAfterCommit(
-        new ShippingCompletedEvent(
+        new ShipmentCompletedEvent(
             UUID.randomUUID(), saved.getId().toString(), null, saved, Instant.now(), ORIGIN));
     return saved;
   }
@@ -62,7 +62,7 @@ public class DefaultShipmentService implements ShipmentService {
     final ShippingDTO saved =
         ShippingMapper.toDto(repository.save(ShippingMapper.toEntity(replacement)));
     shipmentProducer.publishAfterCommit(
-        new ShippingCompletedEvent(
+        new ShipmentCompletedEvent(
             UUID.randomUUID(), id.toString(), null, saved, Instant.now(), ORIGIN));
     return saved;
   }
