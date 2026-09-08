@@ -80,17 +80,17 @@ public class DefaultShipmentService implements ShipmentService {
       if (processFails()) {
         throw new RuntimeException("Shipping Bill of Materials could not be generated.");
       }
-      ShipmentDTO shipmentDTO = new ShipmentDTO(
-          null,
-          orderDTO.getId(),
-          orderDTO.getCustomerId(),
-          ShipmentStatus.REQUESTED,
-          "tracking_number",
-          "carrier",
-          "tracking_url",
-          null,
-          null
-      );
+      ShipmentDTO shipmentDTO =
+          new ShipmentDTO(
+              null,
+              orderDTO.getId(),
+              orderDTO.getCustomerId(),
+              ShipmentStatus.REQUESTED,
+              "tracking_number",
+              "carrier",
+              "tracking_url",
+              null,
+              null);
       repository.save(ShipmentMapper.toEntity(shipmentDTO));
 
     } catch (Exception e) {
@@ -101,9 +101,7 @@ public class DefaultShipmentService implements ShipmentService {
               orderDTO,
               "Error placing the Shipment Request: " + e.getMessage(),
               Instant.now(),
-              ORIGIN_SERVICE
-          )
-      );
+              ORIGIN_SERVICE));
     }
   }
 

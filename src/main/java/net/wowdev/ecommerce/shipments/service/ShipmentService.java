@@ -18,5 +18,4 @@ public interface ShipmentService {
   void delete(UUID id);
 
   void process(OrderDTO orderDTO);
-
 }

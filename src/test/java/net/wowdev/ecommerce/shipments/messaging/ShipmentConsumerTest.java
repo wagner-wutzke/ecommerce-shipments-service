@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 
 import net.wowdev.ecommerce.shipments.service.ShipmentService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class ShipmentConsumerTest {
   @Test

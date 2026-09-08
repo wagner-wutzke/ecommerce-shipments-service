@@ -2,12 +2,15 @@ package net.wowdev.ecommerce.shipments.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import net.wowdev.ecommerce.domain.dto.ShipmentDTO;
 import net.wowdev.ecommerce.domain.entity.ShipmentEntity;
 import net.wowdev.ecommerce.domain.enums.ShipmentStatus;
-import net.wowdev.ecommerce.shipments.repository.ShipmentRepository;
 import net.wowdev.ecommerce.shipments.messaging.ShipmentProducer;
+import net.wowdev.ecommerce.shipments.repository.ShipmentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,8 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import java.util.List;
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultShipmentServiceTest {
