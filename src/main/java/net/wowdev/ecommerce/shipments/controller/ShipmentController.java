@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import net.wowdev.ecommerce.domain.dto.ShippingDTO;
+import net.wowdev.ecommerce.domain.dto.ShipmentDTO;
 import net.wowdev.ecommerce.shipments.service.ShipmentService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,12 +24,12 @@ public class ShipmentController {
   private final ShipmentService service;
 
   @GetMapping("/{id}")
-  public ShippingDTO get(@PathVariable final UUID id) {
+  public ShipmentDTO get(@PathVariable final UUID id) {
     return service.findById(id);
   }
 
   @GetMapping
-  public Page<ShippingDTO> list(
+  public Page<ShipmentDTO> list(
       @RequestParam(defaultValue = "0") @Min(0) final int page,
       @RequestParam(defaultValue = "20") @Min(1) @Max(100) final int pageSize) {
     return service.findAll(
@@ -37,14 +37,14 @@ public class ShipmentController {
   }
 
   @PostMapping
-  public ResponseEntity<ShippingDTO> create(@Valid @RequestBody final ShippingDTO shipment) {
-    final ShippingDTO created = service.create(shipment);
+  public ResponseEntity<ShipmentDTO> create(@Valid @RequestBody final ShipmentDTO shipment) {
+    final ShipmentDTO created = service.create(shipment);
     return ResponseEntity.created(URI.create("/api/v1/shipments/" + created.getId())).body(created);
   }
 
   @PutMapping("/{id}")
-  public ShippingDTO update(
-      @PathVariable final UUID id, @Valid @RequestBody final ShippingDTO shipment) {
+  public ShipmentDTO update(
+      @PathVariable final UUID id, @Valid @RequestBody final ShipmentDTO shipment) {
     return service.update(id, shipment);
   }
 

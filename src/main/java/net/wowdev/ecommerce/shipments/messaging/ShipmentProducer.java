@@ -3,9 +3,12 @@ package net.wowdev.ecommerce.shipments.messaging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent;
+import net.wowdev.ecommerce.domain.events.ShipmentFailedEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -18,23 +21,15 @@ public class ShipmentProducer {
   @Value("${app.kafka.shipments-topic}")
   private String topic;
 
-  public void publishAfterCommit(final ShipmentCompletedEvent event) {
-    if (TransactionSynchronizationManager.isSynchronizationActive()) {
-      TransactionSynchronizationManager.registerSynchronization(
-          new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-              send(event);
-            }
-          });
-      return;
-    }
-    send(event);
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
+  public void publish(final ShipmentCompletedEvent event) {
+    log.debug(">> Publishing ShipmentCompletedEvent: {}", event.eventId());
+    kafkaTemplate.send(topic, event.eventId().toString(), event);
   }
 
-  private void send(final ShipmentCompletedEvent event) {
-    final String key = event.shippingDTO().getId().toString();
-    log.debug(">> Publishing ShipmentCompletedEvent {} with key {}", event.eventId(), key);
-    kafkaTemplate.send(topic, key, event);
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
+  public void publish(final ShipmentFailedEvent event) {
+    log.debug(">> Publishing ShipmentFailedEvent: {}", event.eventId());
+    kafkaTemplate.send(topic, event.eventId().toString(), event);
   }
 }

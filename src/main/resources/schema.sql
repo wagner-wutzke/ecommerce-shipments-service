@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS order_lines;
+DROP TABLE IF EXISTS payment_methods;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS invoices;
+DROP TABLE IF EXISTS inventory;

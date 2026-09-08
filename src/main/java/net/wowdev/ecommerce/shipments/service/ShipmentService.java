@@ -1,18 +1,22 @@
 package net.wowdev.ecommerce.shipments.service;
 
 import java.util.UUID;
-import net.wowdev.ecommerce.domain.dto.ShippingDTO;
+import net.wowdev.ecommerce.domain.dto.OrderDTO;
+import net.wowdev.ecommerce.domain.dto.ShipmentDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ShipmentService {
-  ShippingDTO findById(UUID id);
+  ShipmentDTO findById(UUID id);
 
-  Page<ShippingDTO> findAll(Pageable pageable);
+  Page<ShipmentDTO> findAll(Pageable pageable);
 
-  ShippingDTO create(ShippingDTO shipment);
+  ShipmentDTO create(ShipmentDTO shipment);
 
-  ShippingDTO update(UUID id, ShippingDTO shipment);
+  ShipmentDTO update(UUID id, ShipmentDTO shipment);
 
   void delete(UUID id);
+
+  void process(OrderDTO orderDTO);
+
 }

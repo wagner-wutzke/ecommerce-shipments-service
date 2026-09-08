@@ -3,9 +3,9 @@ package net.wowdev.ecommerce.shipments.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import java.util.UUID;
-import net.wowdev.ecommerce.domain.dto.ShippingDTO;
-import net.wowdev.ecommerce.domain.entity.ShippingEntity;
-import net.wowdev.ecommerce.domain.enums.DeliveryStatus;
+import net.wowdev.ecommerce.domain.dto.ShipmentDTO;
+import net.wowdev.ecommerce.domain.entity.ShipmentEntity;
+import net.wowdev.ecommerce.domain.enums.ShipmentStatus;
 import net.wowdev.ecommerce.shipments.repository.ShipmentRepository;
 import net.wowdev.ecommerce.shipments.messaging.ShipmentProducer;
 import org.junit.jupiter.api.Test;
@@ -24,12 +24,12 @@ class DefaultShipmentServiceTest {
   @Mock ShipmentProducer shipmentProducer;
   @InjectMocks DefaultShipmentService service;
 
-  private ShippingDTO dto(final UUID id) {
-    return new ShippingDTO(
+  private ShipmentDTO dto(final UUID id) {
+    return new ShipmentDTO(
         id,
         UUID.randomUUID(),
         UUID.randomUUID(),
-        DeliveryStatus.IN_TRANSIT,
+        ShipmentStatus.IN_TRANSIT,
         "TRK-1",
         "Carrier",
         "https://track",
@@ -37,12 +37,12 @@ class DefaultShipmentServiceTest {
         null);
   }
 
-  private ShippingEntity entity(final UUID id) {
-    return new ShippingEntity(
+  private ShipmentEntity entity(final UUID id) {
+    return new ShipmentEntity(
         id,
         UUID.randomUUID(),
         UUID.randomUUID(),
-        DeliveryStatus.IN_TRANSIT,
+        ShipmentStatus.IN_TRANSIT,
         "TRK-1",
         "Carrier",
         "https://track",
@@ -67,12 +67,10 @@ class DefaultShipmentServiceTest {
   }
 
   @Test
-  void createPublishesAfterSaving() {
+  void createSuccessfully() {
     UUID id = UUID.randomUUID();
     when(repository.save(any())).thenReturn(entity(id));
     assertEquals(id, service.create(dto(id)).getId());
-    verify(shipmentProducer)
-        .publishAfterCommit(any(net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent.class));
   }
 
   @Test
@@ -80,10 +78,8 @@ class DefaultShipmentServiceTest {
     UUID id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.of(entity(id)));
     when(repository.save(any())).thenReturn(entity(id));
-    ShippingDTO result = service.update(id, dto(id));
+    ShipmentDTO result = service.update(id, dto(id));
     assertEquals(id, result.getId());
-    verify(shipmentProducer)
-        .publishAfterCommit(any(net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent.class));
   }
 
   @Test
