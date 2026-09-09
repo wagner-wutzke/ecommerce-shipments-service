@@ -34,6 +34,7 @@ spring:
 app:
   kafka:
     shipments-topic: ${KAFKA_SHIPMENTS_TOPIC:shipments-topic}
+    payments-topic: ${KAFKA_PAYMENTS_TOPIC:payments-topic.v1}
     invoices-topic: ${KAFKA_PAYMENTS_TOPIC:invoices-topic.v1}
     orders-topic: ${KAFKA_ORDERS_TOPIC:orders-topic.v1}
 
