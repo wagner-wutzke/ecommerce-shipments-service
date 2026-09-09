@@ -82,7 +82,7 @@ public class ShipmentServiceImpl implements ShipmentService {
 
     try {
       if (serviceIsFailing()) {
-        throw new RuntimeException("Shipping Bill of Materials could not be generated.");
+        throw new RuntimeException("Shipment Bill of Materials could not be generated.");
       }
       ShipmentDTO shipmentDTO =
           new ShipmentDTO(
