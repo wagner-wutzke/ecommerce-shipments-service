@@ -1,7 +1,6 @@
 package net.wowdev.ecommerce.shipments.service;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,10 +8,12 @@ import net.wowdev.ecommerce.domain.dto.OrderDTO;
 import net.wowdev.ecommerce.domain.dto.ShipmentDTO;
 import net.wowdev.ecommerce.domain.entity.ShipmentEntity;
 import net.wowdev.ecommerce.domain.enums.ShipmentStatus;
+import net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent;
 import net.wowdev.ecommerce.domain.events.ShipmentFailedEvent;
 import net.wowdev.ecommerce.domain.mapper.ShipmentMapper;
 import net.wowdev.ecommerce.shipments.messaging.ShipmentProducer;
 import net.wowdev.ecommerce.shipments.repository.ShipmentRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DefaultShipmentService implements ShipmentService {
+public class ShipmentServiceImpl implements ShipmentService {
 
   private static final String ORIGIN_SERVICE = "SHIPMENTS-SERVICE";
   private final ShipmentRepository repository;
   private final ShipmentProducer shipmentProducer;
+
+  @Value(value = "${app.service.shipments.failing}")
+  private boolean serviceIsFailing;
 
   @Override
   @Transactional(readOnly = true)
@@ -77,7 +81,7 @@ public class DefaultShipmentService implements ShipmentService {
     log.debug(">> Shipment Request logic still need to be implemented...");
 
     try {
-      if (processFails()) {
+      if (serviceIsFailing()) {
         throw new RuntimeException("Shipping Bill of Materials could not be generated.");
       }
       ShipmentDTO shipmentDTO =
@@ -91,25 +95,45 @@ public class DefaultShipmentService implements ShipmentService {
               "tracking_url",
               null,
               null);
-      repository.save(ShipmentMapper.toEntity(shipmentDTO));
-
+      ShipmentDTO saved =
+          ShipmentMapper.toDto(repository.save(ShipmentMapper.toEntity(shipmentDTO)));
+      log.debug(">> Shipment Request processed successfully...");
+      publishShipmentCompletedEvent(orderDTO, saved);
     } catch (Exception e) {
-      shipmentProducer.publish(
-          new ShipmentFailedEvent(
-              UUID.randomUUID(),
-              orderDTO.getId().toString(),
-              orderDTO,
-              "Error placing the Shipment Request: " + e.getMessage(),
-              Instant.now(),
-              ORIGIN_SERVICE));
+      publishShipmentFailedEvent(orderDTO, e);
     }
   }
 
-  private boolean processFails() {
-    int second = Instant.now().atZone(ZoneId.systemDefault()).getSecond();
-    boolean failed = second % 5 == 0;
-    log.debug(
-        ">> Runtime condition for simulating process failure: [{} % 5 == 0 => {}]", second, failed);
-    return failed;
+  private void publishShipmentFailedEvent(OrderDTO orderDTO, Exception e) {
+    shipmentProducer.publish(
+        new ShipmentFailedEvent(
+            UUID.randomUUID(),
+            orderDTO.getId().toString(),
+            orderDTO,
+            "Error processing the Shipment Request: " + e.getMessage(),
+            Instant.now(),
+            ORIGIN_SERVICE));
+  }
+
+  private void publishShipmentCompletedEvent(OrderDTO orderDTO, ShipmentDTO shipmentDTO) {
+    shipmentProducer.publish(
+        new ShipmentCompletedEvent(
+            UUID.randomUUID(),
+            orderDTO.getId().toString(),
+            orderDTO,
+            shipmentDTO,
+            Instant.now(),
+            ORIGIN_SERVICE));
+  }
+
+  private boolean serviceIsFailing() {
+    if (this.serviceIsFailing) {
+      log.debug(
+          """
+          >> Service is configured o be failing when processing events. "
+             See "app.service.shipments.failing" or "SERVICE_SHIPMENTS_FAILING" environment var.
+          """);
+    }
+    return this.serviceIsFailing;
   }
 }

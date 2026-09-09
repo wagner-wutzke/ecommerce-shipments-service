@@ -20,10 +20,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
-class DefaultShipmentServiceTest {
+class ShipmentServiceImplTest {
   @Mock ShipmentRepository repository;
   @Mock ShipmentProducer shipmentProducer;
-  @InjectMocks DefaultShipmentService service;
+  @InjectMocks
+  ShipmentServiceImpl service;
 
   private ShipmentDTO dto(final UUID id) {
     return new ShipmentDTO(
