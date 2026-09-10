@@ -8,8 +8,8 @@ import net.wowdev.ecommerce.domain.dto.OrderDTO;
 import net.wowdev.ecommerce.domain.dto.ShipmentDTO;
 import net.wowdev.ecommerce.domain.entity.ShipmentEntity;
 import net.wowdev.ecommerce.domain.enums.ShipmentStatus;
-import net.wowdev.ecommerce.domain.events.ShipmentCompletedEvent;
-import net.wowdev.ecommerce.domain.events.ShipmentFailedEvent;
+import net.wowdev.ecommerce.domain.events.ShipmentCompleted;
+import net.wowdev.ecommerce.domain.events.ShipmentFailed;
 import net.wowdev.ecommerce.domain.mapper.ShipmentMapper;
 import net.wowdev.ecommerce.shipments.messaging.ShipmentProducer;
 import net.wowdev.ecommerce.shipments.repository.ShipmentRepository;
@@ -29,7 +29,7 @@ public class ShipmentServiceImpl implements ShipmentService {
   private final ShipmentProducer shipmentProducer;
 
   @Value(value = "${app.service.shipments.failing}")
-  private boolean serviceIsFailing;
+  private boolean failsWhenRunning;
 
   @Override
   @Transactional(readOnly = true)
@@ -78,11 +78,10 @@ public class ShipmentServiceImpl implements ShipmentService {
   @Override
   public void process(OrderDTO orderDTO) {
     log.debug(">> Processing Shipment Request for order: {}", orderDTO.getId());
-    log.debug(">> Shipment Request logic still need to be implemented...");
 
     try {
-      if (serviceIsFailing()) {
-        throw new RuntimeException("Shipment Bill of Materials could not be generated.");
+      if (failsWhenRunning()) {
+        throw new RuntimeException("Shipment Bill of Materials is missing.");
       }
       ShipmentDTO shipmentDTO =
           new ShipmentDTO(
@@ -100,24 +99,26 @@ public class ShipmentServiceImpl implements ShipmentService {
       log.debug(">> Shipment Request processed successfully...");
       publishShipmentCompletedEvent(orderDTO, saved);
     } catch (Exception e) {
-      publishShipmentFailedEvent(orderDTO, e);
+      log.debug(
+          ">> Shipment request for order {} failed. Reason: {}", orderDTO.getId(), e.getMessage());
+      publishShipmentFailedEvent(orderDTO, e.getMessage());
     }
   }
 
-  private void publishShipmentFailedEvent(OrderDTO orderDTO, Exception e) {
+  private void publishShipmentFailedEvent(OrderDTO orderDTO, String reason) {
     shipmentProducer.publish(
-        new ShipmentFailedEvent(
+        new ShipmentFailed(
             UUID.randomUUID(),
             orderDTO.getId().toString(),
             orderDTO,
-            "Error processing the Shipment Request: " + e.getMessage(),
+            reason,
             Instant.now(),
             ORIGIN_SERVICE));
   }
 
   private void publishShipmentCompletedEvent(OrderDTO orderDTO, ShipmentDTO shipmentDTO) {
     shipmentProducer.publish(
-        new ShipmentCompletedEvent(
+        new ShipmentCompleted(
             UUID.randomUUID(),
             orderDTO.getId().toString(),
             orderDTO,
@@ -126,14 +127,14 @@ public class ShipmentServiceImpl implements ShipmentService {
             ORIGIN_SERVICE));
   }
 
-  private boolean serviceIsFailing() {
-    if (this.serviceIsFailing) {
+  private boolean failsWhenRunning() {
+    if (this.failsWhenRunning) {
       log.debug(
           """
           >> Service is configured o be failing when processing events. "
              See "app.service.shipments.failing" or "SERVICE_SHIPMENTS_FAILING" environment var.
           """);
     }
-    return this.serviceIsFailing;
+    return this.failsWhenRunning;
   }
 }

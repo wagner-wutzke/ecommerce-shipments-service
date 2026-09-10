@@ -12,8 +12,10 @@ class ApiExceptionHandlerTest {
 
   @Test
   void mapsNotFound() {
-    var problem = handler.notFound(new ShipmentNotFoundException(UUID.randomUUID()));
+    UUID id = UUID.randomUUID();
+    var problem = handler.notFound(new ShipmentNotFoundException(id));
     assertEquals(HttpStatus.NOT_FOUND.value(), problem.getStatus());
+    assertEquals("Shipment record not found: " + id, problem.getDetail());
   }
 
   @Test
@@ -21,5 +23,13 @@ class ApiExceptionHandlerTest {
     var problem = handler.badRequest(new IllegalArgumentException("bad"));
     assertEquals(HttpStatus.BAD_REQUEST.value(), problem.getStatus());
     assertEquals("bad", problem.getDetail());
+  }
+
+  @Test
+  void mapsValidationFailureToBadRequest() {
+    var problem = handler.badRequest(new IllegalArgumentException("invalid shipment"));
+
+    assertEquals(HttpStatus.BAD_REQUEST.value(), problem.getStatus());
+    assertEquals("invalid shipment", problem.getDetail());
   }
 }

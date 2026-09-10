@@ -2,7 +2,7 @@ package net.wowdev.ecommerce.shipments.messaging;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.wowdev.ecommerce.domain.events.InvoiceCompletedEvent;
+import net.wowdev.ecommerce.domain.events.InvoiceCompleted;
 import net.wowdev.ecommerce.shipments.service.ShipmentService;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -25,9 +25,9 @@ public class ShipmentConsumer {
   }
 
   @KafkaHandler
-  public void handle(final InvoiceCompletedEvent event) {
+  public void handle(final InvoiceCompleted event) {
     log.debug(
-        ">> Processing InvoiceCompletedEvent event sent from {}. Event id {}",
+        ">> Processing InvoiceCompleted event sent from {}. Event id {}",
         event.origin(),
         event.eventId());
     shipmentService.process(event.ordetDTO());
