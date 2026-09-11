@@ -1,4 +1,4 @@
-# microservice-ecommerce-shipments
+# ecommerce-shipments-service
 
 ## Introduction
 This is a Spring Boot microservice project for the **eCommerce Shipments Backend Service**.\
