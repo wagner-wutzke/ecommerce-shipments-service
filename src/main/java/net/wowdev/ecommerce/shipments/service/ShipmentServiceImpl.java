@@ -89,7 +89,7 @@ public class ShipmentServiceImpl implements ShipmentService {
               orderDTO.getId(),
               orderDTO.getCustomerId(),
               ShipmentStatus.REQUESTED,
-              "tracking_number",
+              "TN-" + UUID.randomUUID(),
               "carrier",
               "tracking_url",
               null,
